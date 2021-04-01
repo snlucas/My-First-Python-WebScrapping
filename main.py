@@ -4,6 +4,7 @@ with open('index.html', 'r') as html_file:
     content = html_file.read()
 
     soup = BeautifulSoup(content, 'lxml')
-    tags = soup.find_all('h2')
+    skills = soup.find_all('div', class_='skills')
 
-    print(tags)
+    for skill in skills:
+        print(skill.h3.text)
