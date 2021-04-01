@@ -3,6 +3,7 @@
 
 from bs4 import BeautifulSoup
 import requests
+import csv
 
 
 # iPhone is the item we are looking for
@@ -17,16 +18,21 @@ content = soup.find_all('div', class_='sg-col-4-of-12 s-result-item s-asin sg-co
 itens = [item.find('div', class_='a-section a-spacing-medium') for item in content]  # Get data from the content variable and look closely for the card element that has the info about the product
 
 # Get product info
-item_name = [item.find('span', class_='a-size-base-plus a-color-base a-text-normal') for item in itens]
+item_name = [item.find('span', class_='a-size-base-plus a-color-base a-text-normal').text for item in itens]
 item_price = [item.find('span', class_='a-price') for item in itens]
 
 # Populate iphone dictionary
-iphone['title'] = [name.text for name in item_name]
-for item in itens:
+iphone['title'] = item_name
+for item in item_price:
     # Product without a price doesnt have a tag span with a class a-price. Therefore, we need to deal with a possible search for a non-existent tag
     try:
-        iphone['price'].append(item.find('span', class_='a-price').find('span', class_='a-offscreen').text)
+        iphone['price'].append(item.find('span', class_='a-offscreen').text)
     except AttributeError:
         iphone['price'].append('No price')  # If we find some non-exitent tag, we need to put some data in the list. Otherwise, we may have some ignored data that will be a problem when we need to show results in a grouped way 
 
-print(f"Len Title: {len(iphone['title'])},\nLen Price: {len(iphone['price'])}")
+# It'll be used as an output table
+product_rows = [[iphone['title'][i], iphone['price'][i]] for i in range(len(itens))]
+
+with open('amazon_iphone_prices.csv', 'w') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerows(product_rows)
