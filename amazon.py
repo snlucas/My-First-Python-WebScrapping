@@ -15,11 +15,11 @@ iphone = { 'title':[], 'price':[] }
 query_item = 'iphone'
 url = f'https://www.amazon.com.br/s?k={query_item}&__mk_pt_BR=%C3%85M%C3%85%C5%BD%C3%95%C3%91&ref=nb_sb_noss' 
 
-content = requests.get(url)
-status = content.status_code
-
 # Looking for an OK status code
 for i in range(100):
+    content = requests.get(url)
+    status = content.status_code
+
     if(status >= 400):
         if(status >= 500):
             print(f'Server error status {status}')
@@ -28,7 +28,7 @@ for i in range(100):
         print('Trying again...')
     else:
         # Show some info for the user and fall out the loop
-        print(f'finding for {query_item}...')
+        print(f'\nfinding for {query_item}...')
         break
 
     # Program must not continue, because it cannot connect to server.
@@ -58,6 +58,9 @@ for item in item_price:
 product_rows = [[iphone['title'][i], iphone['price'][i]] for i in range(len(itens))]
 
 # Save data as a CSV file
-with open('amazon_iphone_prices.csv', 'w') as csvfile:
+csv_file_name = 'amazon_iphone_prices.csv'
+with open(csv_file_name, 'w') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerows(product_rows)
+
+print(f'...Finished.\nYour product table was saved as {csv_file_name}\n')
