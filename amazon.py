@@ -1,3 +1,5 @@
+# coding: utf8
+
 # The code below searches for an iPhone on Amazon BR.
 # After it finds the product, it'll get the title and 
 # name of each product in the first page.
@@ -61,6 +63,7 @@ product_rows = [[iphone['title'][i], iphone['price'][i]] for i in range(len(iten
 csv_file_name = 'amazon_iphone_prices.csv'
 with open(csv_file_name, 'w') as csvfile:
     writer = csv.writer(csvfile)
+    writer.writerow(['Produto', 'Preço'])
     writer.writerows(product_rows)
 
 print(f'...Finished.\nYour product table was saved as {csv_file_name}\n')
