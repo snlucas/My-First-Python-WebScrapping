@@ -9,6 +9,7 @@
 from bs4 import BeautifulSoup
 import requests
 import csv
+import mysql.connector
 import sys
 
 
@@ -65,5 +66,59 @@ with open(csv_file_name, 'w') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(['Produto', 'Preço'])
     writer.writerows(product_rows)
+
+
+# Save data as DB
+# db-settings file just have two lines
+# the first one is the username
+# the last one is the password
+with open('db-settings.txt', 'r') as db_file:
+    db_user = db_file.readline()
+    db_password = db_file.readline()
+
+    # or use it:
+    # from getpass import getpass
+    # db_user = input('DB User: ')
+    # db_password = getpass('DB Password: ')
+
+try:
+    mydb = mysql.connector.connect(
+        host = 'localhost',
+        user = db_user,
+        password = db_password,
+        database = 'amz_db' # created using mariadb/mysql server
+    )
+except Error as e:
+    print(e)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("CREATE TABLE IF NOT EXISTS product (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), price VARCHAR(255))")
+
+mycursor.execute("SELECT * FROM product") # catching all the data
+
+product_db = mycursor.fetchall()
+
+if len(product_db) > 0:
+    ### Seeking for updates ###
+    for i in range(len(iphone['title'])):
+        if iphone['price'][i] != product_db[i][-1]:
+            sql = "UPDATE product SET name = %s, price = %s WHERE id = %s"
+            val = (f"{iphone['title'][i]}", f"{iphone['price'][i]}", str(product_db[i][0]))
+            
+            mycursor.execute(sql, val)
+            mydb.commit()
+    ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+else:
+    # Add products from scratch
+    for i in range(len(iphone['title'])):
+        product_name = iphone['title'][i]
+        product_price = iphone['price'][i]
+
+        sql = "INSERT INTO product (name, price) VALUES (%s, %s)"
+        val = [(f'{product_name}', f'{product_price}')]
+
+        mycursor.executemany(sql, val)
+        mydb.commit()
 
 print(f'...Finished.\nYour product table was saved as {csv_file_name}\n')
