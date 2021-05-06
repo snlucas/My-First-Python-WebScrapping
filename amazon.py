@@ -11,6 +11,7 @@ import requests
 import csv
 import mysql.connector
 import sys
+import yagmail
 
 
 # iPhone is the item we are looking for
@@ -99,6 +100,8 @@ mycursor.execute("SELECT * FROM product") # catching all the data
 
 product_db = mycursor.fetchall()
 
+email_updates = [] # List to send updates in an e-mail
+
 if len(product_db) > 0:
     ### Seeking for updates ###
     for i in range(len(iphone['title'])):
@@ -108,6 +111,16 @@ if len(product_db) > 0:
             
             mycursor.execute(sql, val)
             mydb.commit()
+
+            email_updates.append(f"{iphone['title'][i]} - {iphone['price'][i]}")
+    
+    # Send e-mail with updates
+    yag = yagmail.SMTP('lucas.lambda.101@gmail.com')
+    contents = ['Updated itens:\n']
+    for updated_item in email_updates:
+        contents.append(updated_item)
+    yag.send('dev.snlucas@gmail.com', 'Email de Teste', contents)
+    
     ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 else:
     # Add products from scratch
